@@ -6,6 +6,8 @@ import click
 import pytest
 
 from click.testing import CliRunner
+
+from fire import uuid
 import fire.cli.niv
 from fire.cli.niv import (
     niv,
@@ -13,6 +15,7 @@ from fire.cli.niv import (
     skriv_ark,
     ARKDEF_NYETABLEREDE_PUNKTER,
     ARKDEF_FILOVERSIGT,
+    ARKDEF_REVISION,
 )
 
 
@@ -33,6 +36,47 @@ def test_revision(mocker):
         assert result.exit_code == 0
 
         # fire niv ilæg-revision test
+        revision = find_faneblad("testsag-revision", "Revision", ARKDEF_REVISION)
+
+        # quasi-unikt GNSS ident (undgå kollision ved gentagne kørsler af tests)
+        gnss_ident = uuid()[0:4].upper()
+
+        rækker = [
+            # Opret nyt punkt
+            {
+                "Attribut": "OPRET",
+                "Ny værdi": "56.163385 N 10.209170 Ø",
+            },
+            # Tilføj koordinat
+            {
+                "Attribut": "EPSG:5799",
+                "Ny værdi": "nan nan 23.45 2021.75 nan nan 0.2",
+            },
+            # Tilføj tekst-punktinfo
+            {
+                "Attribut": "IDENT:GNSS",
+                "Ny værdi": gnss_ident,
+            },
+            # Tilføj tal-punktinfo
+            {
+                "Attribut": "AFM:højde_over_terræn",
+                "Ny værdi": "0.42",
+            },
+            # Tilføj flag-punktinfo
+            {
+                "Attribut": "ATTR:muligt_datumstabil",
+            },
+            # Ret lokationskoordinat
+            {
+                "Punkt": "K-63-09451",
+                "Attribut": "LOKATION",
+                "Ny værdi": "56.1655 10.20865",
+
+            },
+        ]
+        revision = revision.append(rækker, ignore_index=True)
+        skriv_ark("testsag", {"Revision": revision}, "-revision")
+
         mocker.patch("fire.cli.niv._ilæg_revision.bekræft", return_value=True)
         result = runner.invoke(niv, ["ilæg-revision", "testsag"])
         print(result.output)
