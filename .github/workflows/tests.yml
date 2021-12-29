@@ -3,7 +3,8 @@ name: API/CLI
 on: [push, pull_request]
 
 jobs:
-  tests:
+
+  install:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -104,8 +105,10 @@ jobs:
         # Indlæst opmålingsdistrikter
         python scripts/load_shapefile.py
 
-    - name: Testsuite
-      run: |
-        pytest --cov=fire --cov-report=xml --ignore=test/read/ --ignore=test/write/
-        bash <(curl -s https://codecov.io/bash)
+  testsuite:
+    needs: install
+    steps:
+      - run: |
+          pytest --cov=fire --cov-report=xml --ignore=test/read/ --ignore=test/write/
+          bash <(curl -s https://codecov.io/bash)
 
