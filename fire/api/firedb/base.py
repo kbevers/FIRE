@@ -86,6 +86,16 @@ class FireDbBase:
                     obj._registreringtil = func.current_timestamp()
                     thissession.add(obj)
 
+    def __enter__(self):
+        self.session.begin()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if isinstance(exc_val, Exception):
+            self.session.rollback()
+            return
+        self.session.commit()
+
     def _create_engine(self):
         return create_engine(
             f"{self._dialect}://{self.connectionstring}",
