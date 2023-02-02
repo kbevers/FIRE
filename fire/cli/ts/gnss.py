@@ -227,7 +227,7 @@ def gnss(objekt: str, parametre: str, fil: click.Path, **kwargs) -> None:
     if not fil:
         raise SystemExit
 
-    with open(fil, mode="w") as f:
+    with open(fil, mode="w", newline="") as f:
         csv_skriver = csv.writer(
             f, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL
         )
